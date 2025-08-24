@@ -11,11 +11,11 @@
     </style>
 </head>
 <body>
- <h1>Position du train : {{ lat }} {{ lng }}</h1>
-    <h2>Vitesse : {{ speed_ms }} m/s</h2>
-
+<h1>Position du train : </h1>
+    <p>Latitude : {{ lat | floatformat:2 }}</p>
+    <p>Longitude : {{ lng | floatformat:2 }}</p>
+<h2>Vitesse : {{ speed_kmh | floatformat }} km/h</h2>
     <div id="map"></div>
-
     <script>
         const position = [{{ lat }}, {{ lng }}];
         const map = L.map('map').setView(position, 13);

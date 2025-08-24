@@ -10,4 +10,4 @@ def test(request):
 
 def get_data(request):
     data = get_map_data()
-    return render(request, 'map.html', {'lat': data['lat'], 'lng': data['lng'], 'speed_ms': data['speed_ms']})
+    return render(request, 'map.html', {'lat': data['lat'], 'lng': data['lng'], 'speed_kmh': data['speed_kmh']})

@@ -7,6 +7,7 @@ def get_map_data():
 
     payload = {}
     headers = {
+        # from C:\Users\[YOUR USERNAME]\Documents\My Games\TrainSimWorld5\Saved\Config
         'DTGCommKey': '5c8N1tnWPtApKPkUzCufVp5XmsbQKcEEiDgt3wUgiHk='
     }
 
@@ -29,8 +30,11 @@ def get_map_data():
 
     if response_speed_json["Result"] == "Success":
         data['speed_ms'] = response_speed_json["Values"]["Speed (ms)"]
+        data['speed_kmh'] = response_speed_json["Values"]["Speed (ms)"] * 3.6
 
     else:
         print("Erreur lors de la récupération de la vitesse du train")
+        data['speed_ms'] = 0
+        data['speed_kmh'] = 0
 
     return data
