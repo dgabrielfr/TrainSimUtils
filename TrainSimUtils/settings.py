@@ -122,3 +122,5 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+TSW_HTTP_KEY = "5c8N1tnWPtApKPkUzCufVp5XmsbQKcEEiDgt3wUgiHk="

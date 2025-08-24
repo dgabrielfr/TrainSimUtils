@@ -12,9 +12,16 @@
 </head>
 <body>
 <h1>Position du train : </h1>
-    <p>Latitude : {{ lat | floatformat:2 }}</p>
-    <p>Longitude : {{ lng | floatformat:2 }}</p>
-<h2>Vitesse : {{ speed_kmh | floatformat }} km/h</h2>
+    <p>Latitude : <span id="latVal">{{ lat | floatformat:2 }}</span></p>
+    <p>Longitude : <span id="lngVal">{{ lng | floatformat:2 }}</span></p>
+<h2>Vitesse : <span id="speedVal">{{ speed_kmh | floatformat }}</span> km/h</h2>
+    <div style="margin: 8px 0;">
+        <label for="intervalRange">Intervalle de rafraîchissement (ms) :
+            <strong><span id="intervalLabel">2000</span></strong>
+        </label>
+        <input id="intervalRange" type="range" min="250" max="10000" step="250" value="2000" style="vertical-align: middle; width: 300px; margin-left: 8px;">
+        <button id="toggleBtn" type="button" style="margin-left: 8px;">Pause</button>
+    </div>
     <div id="map"></div>
     <script>
         const position = [{{ lat }}, {{ lng }}];
@@ -24,9 +31,86 @@
             attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
 
-        L.marker(position).addTo(map)
+        const marker = L.marker(position).addTo(map)
             .bindPopup('Train')
             .openPopup();
+
+        // Gestion du polling à intervalle variable
+        const intervalInput = document.getElementById('intervalRange');
+        const intervalLabel = document.getElementById('intervalLabel');
+        const toggleBtn = document.getElementById('toggleBtn');
+        const latEl = document.getElementById('latVal');
+        const lngEl = document.getElementById('lngVal');
+        const speedEl = document.getElementById('speedVal');
+
+        let pollingMs = parseInt(intervalInput.value, 10) || 2000;
+        let timerId = null;
+        let paused = false;
+
+        intervalLabel.textContent = pollingMs;
+
+        async function fetchAndUpdate() {
+            try {
+                // Utilise la résolution d’URL Django pour éviter toute erreur de chemin relatif
+                const res = await fetch('{% url "train-data-json" %}', { cache: 'no-store' });
+                if (!res.ok) return;
+                const data = await res.json();
+                if (typeof data.lat !== 'number' || typeof data.lng !== 'number') return;
+
+                const lat = data.lat;
+                const lng = data.lng;
+                const speed = typeof data.speed_kmh === 'number' ? data.speed_kmh : null;
+
+                marker.setLatLng([lat, lng]);
+                latEl.textContent = lat.toFixed(2);
+                lngEl.textContent = lng.toFixed(2);
+                if (speed !== null) {
+                    speedEl.textContent = speed.toFixed(0);
+                }
+            } catch (e) {
+                // console.error('Erreur fetchAndUpdate:', e);
+            }
+        }
+
+
+
+        function startPolling() {
+            stopPolling();
+            if (paused || pollingMs <= 0) return;
+            // Lancement immédiat puis à intervalle régulier
+            fetchAndUpdate();
+            timerId = setInterval(fetchAndUpdate, pollingMs);
+        }
+
+        function stopPolling() {
+            if (timerId) {
+                clearInterval(timerId);
+                timerId = null;
+            }
+        }
+
+        intervalInput.addEventListener('input', () => {
+            pollingMs = parseInt(intervalInput.value, 10) || 0;
+            intervalLabel.textContent = pollingMs;
+        });
+
+        intervalInput.addEventListener('change', () => {
+            // Redémarre avec le nouvel interval
+            startPolling();
+        });
+
+        toggleBtn.addEventListener('click', () => {
+            paused = !paused;
+            toggleBtn.textContent = paused ? 'Relancer' : 'Pause';
+            if (paused) {
+                stopPolling();
+            } else {
+                startPolling();
+            }
+        });
+
+        // Démarrage initial
+        startPolling();
     </script>
 
 </body>

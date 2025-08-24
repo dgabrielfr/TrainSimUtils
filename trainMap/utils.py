@@ -1,4 +1,8 @@
 import requests
+from django.http import JsonResponse
+
+from TrainSimUtils.settings import TSW_HTTP_KEY
+
 
 def get_map_data():
     data = {}
@@ -8,7 +12,8 @@ def get_map_data():
     payload = {}
     headers = {
         # from C:\Users\[YOUR USERNAME]\Documents\My Games\TrainSimWorld5\Saved\Config
-        'DTGCommKey': '5c8N1tnWPtApKPkUzCufVp5XmsbQKcEEiDgt3wUgiHk='
+        # now in settings
+        'DTGCommKey': TSW_HTTP_KEY
     }
 
     # Coordinates
@@ -38,3 +43,17 @@ def get_map_data():
         data['speed_kmh'] = 0
 
     return data
+
+
+def get_data_json(request):
+    """
+    Endpoint JSON pour le polling côté front.
+    Renvoie: {"lat": float, "lng": float, "speed_kmh": float}
+    """
+    data = get_map_data()
+    return JsonResponse({
+        'lat': data.get('lat'),
+        'lng': data.get('lng'),
+        'speed_kmh': data.get('speed_kmh'),
+    })
+
